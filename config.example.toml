@@ -1,0 +1,59 @@
+# ============================================================
+#  Configuration de la pipeline cours  (audio -> Mistral -> Claude -> notes)
+#  Modèle versionné : au premier lancement, il est copié en config.toml (ta config perso,
+#  non versionnée). Modifie config.toml, pas ce fichier.
+# ============================================================
+
+# Mode de transcription :
+#   "web" = via la page Reconnaissance vocale de Mistral Studio avec ton compte gratuit (par défaut)
+#           -> connecte-toi une fois avec `python cours.py login`
+#   "api" = via l'API payante (remplir mistral_api_key)
+transcription = "web"
+
+# true = montre la fenêtre Edge pendant la transcription web (utile pour voir ce qui se passe).
+navigateur_visible = false
+
+# Seulement pour le mode "api" :
+mistral_api_key = ""
+mistral_model = "voxtral-mini-latest"
+langue = "fr"
+
+# Les fichiers audio déposés ici (ou dans un sous-dossier = nom de la matière) sont traités automatiquement.
+# Tu peux mettre plusieurs dossiers, ex. un dossier Google Drive synchronisé :
+#   dossiers_entree = ["inbox", "G:/Mon Drive/Cours-Inbox"]
+dossiers_entree = ["inbox"]
+
+# Où écrire les notes (compatible Obsidian : tu peux pointer directement dans ton vault).
+dossier_sortie = "Cours"
+
+# Après un traitement réussi, l'enregistrement audio est SUPPRIMÉ (la transcription est gardée en .txt
+# dans le dossier du cours, sous-dossier transcriptions/). En cas d'erreur, l'audio est conservé pour relancer.
+# Mets true pour garder les audios dans dossier_archive.
+garder_audio = false
+dossier_archive = "archive"
+
+# (Optionnel) Conversion PDF proposée à la fin de l'enregistrement (réponse par défaut : non),
+# avec un convertisseur md2pdf (Pandoc + XeLaTeX). Laisse md2pdf_script vide pour ne jamais poser la question.
+# Exemple : md2pdf_script = "C:/chemin/vers/md2pdf/convert.py"
+md2pdf_script = ""
+md2pdf_mode = "academic"        # "academic" (page de garde, sommaire) ou "light"
+md2pdf_theme = ""               # ex. "C:/chemin/vers/md2pdf/theme"
+
+# Taille des morceaux (en minutes). Pendant l'enregistrement, chaque morceau terminé est transcrit tout de suite.
+duree_segment_min = 30
+
+# Modèle Claude utilisé par Claude Code (`claude -p`). Vide = modèle par défaut de ton abonnement.
+claude_model = ""
+
+# Matières : le nom sert de dossier de sortie.
+# "auto" = Claude devine la matière à partir de la transcription si elle n'est pas indiquée.
+matieres = ["Reseaux", "Systemes", "Algorithmique", "BaseDeDonnees", "Programmation"]
+
+# (Optionnel) Emploi du temps : si l'audio n'est pas rangé dans un sous-dossier,
+# la matière est déduite de l'heure d'enregistrement.
+# jour: 1=lundi ... 7=dimanche ; heures au format "HH:MM".
+# [[emploi_du_temps]]
+# jour = 1
+# debut = "08:00"
+# fin = "10:00"
+# matiere = "Reseaux"

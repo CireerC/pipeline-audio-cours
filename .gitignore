@@ -1,0 +1,27 @@
+# --- Confidentiel : ne jamais versionner ---
+# profil Edge = session Mistral connectée
+.navigateur/
+# config perso (clé API éventuelle, chemins) ; le modèle versionné est config.example.toml
+config.toml
+# dernier dossier de cours choisi
+.etat.json
+.env
+
+# --- Données de cours (audio, transcriptions, notes) ---
+enregistrements/
+inbox/*
+!inbox/.gitkeep
+work/
+archive/
+sauvegardes/
+erreurs/
+Cours/
+
+# --- Python / système ---
+__pycache__/
+*.pyc
+.venv/
+venv/
+Thumbs.db
+desktop.ini
+.DS_Store
