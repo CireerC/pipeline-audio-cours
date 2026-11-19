@@ -490,6 +490,11 @@ def process(audio: Path, cfg: dict, matiere: str | None = None, folder: Path | N
     matiere = matiere or guess_matiere(audio, cfg, when)
     log(f"Traitement de « {audio.name} » — matière : {matiere}, date : {when:%Y-%m-%d %H:%M}")
     cache = cache_path(audio)
+    seg_dir = audio.parent / audio.stem
+    if not cache.exists() and seg_dir.is_dir() and any(seg_dir.glob("part_*.mp3")):
+        # Relance après une erreur : on reprend les morceaux déjà transcrits pendant le cours.
+        log("  reprise de l'enregistrement : les morceaux déjà transcrits sont réutilisés")
+        finish_recording(seg_dir, None, cfg)
     transcript = transcribe(audio, cfg, cache)
     log(f"  transcription : {len(transcript.split())} mots")
 
@@ -675,9 +680,9 @@ def record(cfg: dict, folder: Path | None) -> tuple[Path, threading.Thread]:
     return seg_dir, live
 
 
-def finish_recording(seg_dir: Path, live: threading.Thread, cfg: dict) -> Path:
+def finish_recording(seg_dir: Path, live: threading.Thread | None, cfg: dict) -> Path:
     """Recolle les morceaux en un seul audio, transcrit ceux qui restent, et prépare la transcription complète."""
-    if live.is_alive():
+    if live and live.is_alive():
         log("  (fin de la transcription du morceau en cours…)")
         live.join()
     parts = sorted(seg_dir.glob("part_*.mp3"))

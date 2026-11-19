@@ -111,16 +111,26 @@ def transcribe_files(files: list[Path], headless: bool = True, timeout_min: int 
         try:
             for i, f in enumerate(files, 1):
                 log(f"  Mistral (web) : segment {i}/{len(files)}")
-                _open_page(page)
-                page.locator("input[type=file]").first.set_input_files(str(f))
                 btn = page.locator('button:not([id*="trigger"])', has_text="Transcrire").last
-                deadline = time.time() + 120
-                while not btn.is_enabled():
-                    if time.time() > deadline:
-                        shot = _screenshot(page, "bouton_transcrire")
-                        raise MistralErreur("Le bouton « Transcrire » ne s'active pas (fichier refusé ou page modifiée)."
-                                            + (f"\n   Capture d'écran : {shot}" if shot else ""))
-                    time.sleep(1)
+                for essai in range(1, 4):
+                    _open_page(page)
+                    try:   # laisse la page finir de se charger, sinon elle peut ignorer le fichier déposé
+                        page.wait_for_load_state("networkidle", timeout=15_000)
+                    except PWTimeout:
+                        pass
+                    page.locator("input[type=file]").first.set_input_files(str(f))
+                    deadline = time.time() + 45
+                    while not btn.is_enabled() and time.time() < deadline:
+                        time.sleep(1)
+                    if btn.is_enabled():
+                        break
+                    if essai < 3:
+                        log(f"  (la page n'a pas pris le fichier, nouvel essai {essai + 1}/3)")
+                else:
+                    shot = _screenshot(page, "bouton_transcrire")
+                    raise MistralErreur("Le bouton « Transcrire » ne s'active pas après 3 essais "
+                                        "(fichier refusé ou page modifiée)."
+                                        + (f"\n   Capture d'écran : {shot}" if shot else ""))
                 try:
                     with page.expect_response(
                             lambda r: "/audio/transcriptions" in r.url and r.request.method == "POST",
